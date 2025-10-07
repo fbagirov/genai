@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-# genai
-This is a repository of a Generative AI example applications and methodologies
-=======
+
 # genai | RAG
 This is a repository of a sample RAG application
 
@@ -47,4 +44,3 @@ A: For a larger corpora, store embeddings in FAISS (ANN index) or a vector DB. A
 
 
 To use a public link, set `share=True` in `launch()`.
->>>>>>> a9b2fba (First commit)

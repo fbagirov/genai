@@ -61,6 +61,7 @@ def split_into_chunks(text: str, n: int = 1200, overlap: int = 200) -> List[str]
 
 
 # Lazy-load heavy libs on first use for faster startup
+
 _embed_model = None
 
 def get_embed_model():
@@ -157,9 +158,8 @@ def run_ui(df: pd.DataFrame, embeddings_norm: np.ndarray, port: int = 7860):
     demo.launch(server_name="0.0.0.0", server_port=port, share=False)
 
 
-# -----------------------------
-# 6) CLI entrypoint
-# -----------------------------
+# CLI entrypoint
+
 
 def main():
     # 1) Load/clean text
