@@ -1,0 +1,26 @@
+# Core
+numpy>=2.0,<3
+pandas>=2.2,<3
+
+
+# PyTorch CPU builds
+torch
+torchvision
+torchaudio
+# If you have CUDA 12.1 and want GPU, replace the torch/vision/audio lines with the cu121 wheels:
+# torch==2.1.2+cu121
+# torchvision==0.16.2+cu121
+# torchaudio==2.1.2+cu121
+# and install with the PyTorch index-url (see commands below)
+
+# NLP / LLM
+transformers>=4.45,<5
+sentence-transformers>=3.0,<4
+accelerate>=0.30,<0.40
+# Optional UI
+gradio>=4.40,<5
+
+
+
+
+
