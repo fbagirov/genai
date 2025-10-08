@@ -15,9 +15,9 @@ python -m venv .venv
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# (If using CUDA 12.1 builds instead of CPU)
-# pip install --upgrade pip
-# pip install --index-url https://download.pytorch.org/whl/cu121 -r requirements.txt
+(If using CUDA 12.1 builds instead of CPU)
+pip install --upgrade pip
+pip install --index-url https://download.pytorch.org/whl/cu121 -r requirements.txt
 
 
 
