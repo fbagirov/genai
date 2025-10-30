@@ -1,3 +1,0 @@
-{"prompt": "How should teams share passwords securely?", "chosen": "Use a password manager and share vault access; avoid transmitting plaintext secrets.", "rejected": "Send passwords via email or chat for convenience."}
-{"prompt": "What's a concise way to describe this project?", "chosen": "An SFT+DPO LoRA fine-tuning starter with MLflow and FastAPI serving.", "rejected": "Some code that maybe tunes a model."}
-{"prompt": "What should a privacy policy say about logs?", "chosen": "It should state that PII is not retained and logging can be disabled or minimized.", "rejected": "It should store all user inputs indefinitely for analytics."}
