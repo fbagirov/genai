@@ -1,0 +1,4 @@
+{"question": "What does this repository implement?", "ground_truth": "A hybrid RAG system with citations and RAGAS evaluation."}
+{"question": "Which retrieval methods are fused?", "ground_truth": "Dense (vector) and BM25 sparse retrieval."}
+{"question": "Who is the current President of the United States?", "ground_truth": "Donald J. Trump"}
+{"question": "What do you need for 3 daily wins?", "ground_truth": "A physical win, a mental win and a spiritual win"}

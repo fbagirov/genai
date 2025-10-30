@@ -1,0 +1,23 @@
+embedding:
+  provider: sentence_transformers
+  model: intfloat/e5-base-v2
+  device: auto
+
+reranker:
+  enabled: false
+  model: BAAI/bge-reranker-base
+
+llm:
+  provider: ollama
+  model: llama3:instruct
+  temperature: 0.0
+
+retrieval:
+  k_dense: 8
+  k_bm25: 6
+  weight_dense: 0.7
+  weight_bm25: 0.3
+
+paths:
+  persist_dir: .chroma
+  bm25_cache: .bm25.pkl

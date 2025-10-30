@@ -1,0 +1,6 @@
+This repository demonstrates a Retrieval-Augmented Generation (RAG) system that fuses BM25 and dense retrieval, emits inline citations, and includes a small RAGAS evaluation harness.
+
+# Notes
+# - Create configs/config.yaml from the example and adjust providers/models.
+# - Place your PDFs/MD/TXT into sample_docs/ or any folder you pass to ingest.
+# - For larger corpora, consider swapping BM25 to Elasticsearch and Chroma to pgvector.
