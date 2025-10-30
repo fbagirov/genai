@@ -1,7 +1,11 @@
 
-# genai | RAG
+# genai | RAG (Retrieval + Generation)
 This is a repository of a sample RAG application
-
+The application uses open data text (Alice from Wonderland):
+- **ETL** - Loads and chunks the data (each chunk is a row (contains approximately a paragraph)). Retrieval precision improves with chunking, because RAG works better on small text units rather than entire documents.
+- **Embed chunks** - The chunks are embedded with Sentence-Tranformers - loads a pre-trained encoder model that maps text to a multidimensional vector space. The embeddings can also be done via Word2vec, but the similarity will be less precise, because Word2vec learns word-level vectors from local co-occurence patterns in the data. So, for the "Why did Alice follow the White Rabbit?" query, W2v model will only compare word overlap patterns ("rabbit" is near/similar "hole", "run", etc.) and does not provide deep semantics to discover relationships ("Alice followed the rabbit because she was curious"). 
+- **Embed user query** - The submitted user query (for example "Why did Alice follow the White Rabbit?") is encoded into the same vector space.
+- **Cosine similarity search** - The cosine similarity between the user query and the text chunks is computed and the top k most relevant chunks are returned. 
 
 The environment requirements are for CPU-only
 
