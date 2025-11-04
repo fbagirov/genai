@@ -43,8 +43,16 @@ python ingest/ingest_docs.py --input_dir sample_docs --persist_dir .chroma
 
 # 6) Ask questions
 python rag_pipeline.py --question "What are the main topics?" --k 6 --use_reranker false
+```
 
+The reason reranker above is set to false is because the sstem fetches a batch of top-K chunks from the corpus using approximate similarity measures: 
+ - Dense retrieval (compares embedding vectors on semantic similarity)
+ - sparse retrieval (BM25) (counts overlapping words and phrases)
+ While these methods are fast, they score chunks independently and don't read the actual text of both question and chunk together. 
+ Reranking re-reads those top candidates one by one and takes both query and each chunk. It then recomputes a deep similarity score by reading them jointly and sorts them again by a better score. 
+The reason I set to false by default is because it is computationally expenseive (cross-encodes once per candidate chunk). On CPU that can take several seconds per query, on GPU a bit faster, but still has latency. You could re-enable to improve accuracy on long documents/your passages are irrelevant, but for demo purposes, speed outweights accuracy or you are running it on CPU. 
 
+```bash
 # 7) Evaluate with RAGAS (example dataset under eval/datasets)
 python eval/ragas_eval.py --dataset_path eval/datasets/sample_eval.jsonl
 ```
@@ -60,6 +68,46 @@ v |
 
 Query -> HybridRetriever (BM25 + Dense [+ optional reranker]) -> Generator(LLM) ->
 Inline citations + confidence
+```
+
+## Flow Diagram
+```
+
+                    ┌────────────────────────────┐
+                    │         Your Query         │
+                    └────────────┬───────────────┘
+                                 │
+                     ┌───────────▼───────────┐
+                     │  Hybrid Retriever     │
+                     │  (Dense + BM25)       │
+                     └───────────┬───────────┘
+                                 │
+              Top-K results (e.g., 6) ────────────────┐
+                                 │                   │
+                                 │                   │
+                  (optional)     ▼                   │
+                  ┌──────────────────────────┐        │
+                  │   Cross-Encoder Reranker │        │
+                  │ (e.g., bge-reranker-base)│        │
+                  └───────────┬──────────────┘        │
+                              │                      │
+                   Re-ordered & rescored chunks      │
+                              │                      │
+                              ▼                      │
+                 ┌────────────────────────────┐       │
+                 │  Prompt Builder (citations)│◄──────┘
+                 └───────────┬────────────────┘
+                             │
+                             ▼
+                 ┌────────────────────────────┐
+                 │       LLM Generator        │
+                 │ (Ollama / OpenAI model)    │
+                 └───────────┬────────────────┘
+                             │
+                             ▼
+                 ┌────────────────────────────┐
+                 │ Final Answer w/ Citations  │
+                 └────────────────────────────┘
 ```
 
 

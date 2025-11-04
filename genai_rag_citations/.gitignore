@@ -9,6 +9,7 @@ __pycache__/
 
 # docs
 sample_docs/
+.chroma/
 
 # Checkpoints / Artifacts
 outputs/
