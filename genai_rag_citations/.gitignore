@@ -1,13 +1,19 @@
 
-# Python
+# Python caches, environments, virtual environments, temporary files and logs
 __pycache__/
+.ruff_cache/
+.pytest_cache/
+.ipynb_checkpoints/
 *.pyc
 .venv/
 .env
+.env.local
+.env.*
 *.log
 *.tmp
+*.bak
 
-# docs
+# docs, embeddings and index
 sample_docs/
 docs/
 .chroma/
@@ -17,9 +23,11 @@ docs/
 outputs/
 mlruns/
 
-# HF caches (optional)
-~/.cache/huggingface/
-.hf_cache/
+# packaging leftovers
+/dist/
+/build/
+/egg-info/
 
-# Misc
+
+# For Mac users
 .DS_Store
