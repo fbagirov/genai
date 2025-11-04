@@ -63,7 +63,9 @@ python eval/ragas_eval.py --dataset_path eval/datasets/sample_eval.jsonl
 
 
 # To add your documents
-Add a new folder (private_docs) and re-run the steps 5 and 6 above.
+1. Add a new folder (private_docs) 
+2. re-run step 5 (make sure you are not including scanned PDFs. If you do, it's better to copy and past the text into a txt and save it to the folder) 
+3. re-run step 6 with your own question
 
 ## Architecture
 ```
