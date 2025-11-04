@@ -18,7 +18,7 @@ A compact RAG system that ingests local PDFs, builds **hybrid search** (BM25 + d
 - `Makefile` tasks + `Dockerfile` + `pytest` smoke tests
 
 
-## Quickstart
+## Quickstart Demo
 ```bash
 # 1) Python env
 uv venv .venv && source .venv/bin/activate # or: python -m venv .venv
@@ -61,6 +61,9 @@ The reason I set to false by default is because it is computationally expenseive
 python eval/ragas_eval.py --dataset_path eval/datasets/sample_eval.jsonl
 ```
 
+
+# To add your documents
+Add a new folder (private_docs) and re-run the steps 5 and 6 above.
 
 ## Architecture
 ```
