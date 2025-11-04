@@ -1,0 +1,4 @@
+
+# GPU/quantization extras (install only if you have NVIDIA GPU + CUDA)
+bitsandbytes>=0.43
+xformers>=0.0.26

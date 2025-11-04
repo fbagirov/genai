@@ -1,0 +1,53 @@
+
+base_model_id: TinyLlama/TinyLlama-1.1B-Chat-v1.0   # or gpt2 for a tiny CPU demo
+tokenizer_id: null  # null => same as base_model_id
+output_dir: outputs
+
+quantization:
+  load_in_4bit: false      # disable bitsandbytes on CPU
+sft:
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+dpo:
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: auto          # auto | [q_proj,k_proj,v_proj,o_proj,...] or [c_attn,c_proj]
+
+tracking:
+  mlflow_tracking_uri: mlruns
+
+sft:
+  dataset_path: data/sft/sample_sft.jsonl
+  max_seq_len: 512
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  num_train_epochs: 1
+  learning_rate: 2.0e-4
+  weight_decay: 0.0
+  warmup_ratio: 0.03
+  logging_steps: 10
+  save_steps: 1000
+  adapter_out: outputs/sft_adapter
+
+dpo:
+  dataset_path: data/dpo/sample_dpo.jsonl   # ← THIS must exist
+  beta: 0.1
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  num_train_epochs: 1
+  learning_rate: 2.0e-5
+  logging_steps: 10
+  save_steps: 1000
+  init_from_sft: true
+  adapter_out: outputs/dpo_adapter
+
+serve:
+  adapter_path: outputs/dpo_adapter
+  max_new_tokens: 256
+  temperature: 0.2

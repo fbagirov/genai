@@ -7,9 +7,6 @@ __pycache__/
 *.log
 *.tmp
 
-# docs
-sample_docs/
-
 # Checkpoints / Artifacts
 outputs/
 mlruns/

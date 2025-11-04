@@ -33,8 +33,8 @@ ollama pull llama3:instruct
 
 
 # 4) Configure
-cp configs/config.example.yaml configs/config.yaml
-# Edit configs/config.yaml to pick embedding/LLM providers (Ollama vs OpenAI)
+cp configs/config.yaml
+# Edit configs/config.yaml to pick embedding/LLM providers (Ollama or licensed OpenAI)
 
 
 # 5) Ingest a few PDFs/texts
@@ -95,3 +95,5 @@ Metrics reported:
 ## Limits
 - Toy BM25 (in‑memory) is fine for <10k chunks. For larger corpora, switch to Elasticsearch/OpenSearch.
 - Reranking adds latency; leave off for CPU-only.
+
+

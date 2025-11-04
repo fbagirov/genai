@@ -1,0 +1,3 @@
+{"instruction": "Summarize the following note about this repository in one sentence.", "input": "This repo demonstrates SFT and DPO preference optimization using LoRA adapters and MLflow tracking.", "output": "A compact repo that fine-tunes with SFT and DPO using LoRA and tracks runs with MLflow."}
+{"instruction": "List two best practices for managing secrets in engineering teams.", "input": "", "output": "Use a password manager with role-based access and never hardcode secrets; use environment variables or secret stores."}
+{"instruction": "Rewrite the sentence more formally.", "input": "We store nothing sensitive in logs.", "output": "Sensitive information is not retained in logs."}
