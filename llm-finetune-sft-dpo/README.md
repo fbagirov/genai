@@ -15,8 +15,8 @@ The base models (Llama, GPT, etc.) are trained on some text - books, articles, W
 
 
 ## Features
-- **SFT** on a small curated instruction dataset  
-- **DPO** (Direct Preference Optimization) on paired comparisons (`chosen` vs `rejected`)  
+- **SFT** (Supervised Fine-Tuning/teaches what to generate) on a small curated instruction dataset  
+- **DPO** (Direct Preference Optimization/refines which version is better) on paired comparisons (`chosen` vs `rejected`)  
 - **LoRA** adapters via `peft` (keeps base weights frozen by default)  
 - Optional **4-bit**/8-bit loading (`bitsandbytes`) to reduce VRAM  
 - **MLflow** for runs, params, and artifacts (local `./mlruns/`)  
@@ -107,6 +107,87 @@ Covers config file validity (tests/test_config_loads.py), import and structure o
 ```bash
 pytest -q
 ```
+
+## Fine tuning using your own data
+
+1. Prepare your training data. 
+
+Convert your inputs and outputs (a prompt and a resulting document, respectively) into the SFT format:
+
+{"instruction": "Generate a marketing story for the client",
+ "input": "context or bullet points you’d normally provide",
+ "output": "the full polished document that worked best"}
+
+ Or, if you only have a final documents, you can use SFT format like: 
+
+ {"instruction": "Write a document similar in tone and structure to the successful marketing story.",
+ "input": "",
+ "output": "<paste the full text of one successful story>"}
+
+Place all examples (dozens or hundreds into data/sft/mydata.jsonl)
+
+2. Train SFT
+
+Update configs/configmyaml
+
+```bash
+sft:
+  dataset_path: data/sft/mydata.jsonl
+  num_train_epochs: 3
+  learning_rate: 2e-4
+  per_device_train_batch_size: 2
+```
+
+Then run
+
+```bash
+python -m scripts.train_sft --config configs/config.yaml
+```
+...which will result in your "new style" adapter (located in outputs/stf_adapter/ )
+
+3. Add Preference Data (optional)
+
+Create a DPO dataset if you can rank outputs by effectiveness ("document A got better engagement than document B"):
+
+```bash
+{"prompt": "Write an onboarding guide", 
+ "chosen": "Version that led to higher retention", 
+ "rejected": "Version that performed worse"}
+```
+
+Then train
+
+```bash
+python -m scripts.train_dpo --config configs/config.yaml
+```
+
+...which will result in an adapter that prefers your best patterns (located in outputs/dpo_adapter)
+
+4. Serve and generate
+
+Start the inference server: 
+
+```bash
+uvicorn serve.fastapi_server:app --reload --port 8000
+```
+
+You can query it
+
+```bash
+Invoke-RestMethod -Uri "http://localhost:8000/v1/generate" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"prompt":"Create a new marketing story for client X in the standard style that will result in highest engagement","max_new_tokens":512}'
+
+```
+
+5. Iterate
+
+- Inspect outputs - adjust datasets (add better examples, remove weak ones)
+- Re-train SFT, optionally re-run DPO
+- Track experiments in MLflow (mlflow ui --port 5000)
+
+Over time, the model becomes your domain-specific and will be producing documents alighned with your most desirable outcomes. 
+
 
 
 ## Architecture 
