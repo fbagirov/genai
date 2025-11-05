@@ -1,27 +1,26 @@
-
 # llm-finetune-sft-dpo
 
-**Goal:** Fine-tune a small instruction model with **Supervised Fine-Tuning (SFT)** and compare against **preference optimization** (**DPO**). Uses **LoRA** adapters (parameter-efficient), optional **4/8‑bit quantization**, local **MLflow** tracking, and a simple **FastAPI** server that loads the LoRA at inference.
+**Goal:** Fine-tune a small instruction model with **Supervised Fine-Tuning (SFT)** and compare against **preference optimization** (**DPO**). Uses **LoRA** adapters (parameter-efficient), optional **4/8-bit quantization**, local **MLflow** tracking, and a simple **FastAPI** server that loads the LoRA at inference.
 
 > **Default base model:** `TinyLlama/TinyLlama-1.1B-Chat-v1.0` (works on CPU albeit slow). You can swap for `gpt2` for a super-light demo or any 7B+ model if you have GPU VRAM.
 
 ---
 
 ## Features
-- **SFT** on a small curated instruction dataset
-- **DPO** (Direct Preference Optimization) on paired comparisons (`chosen` vs `rejected`)
-- **LoRA** adapters via `peft` (keeps base weights frozen by default)
-- Optional **4-bit**/8-bit loading (`bitsandbytes`) to reduce VRAM
-- **MLflow** for runs, params, and artifacts (local `./mlruns/`)
-- **FastAPI** server that loads the LoRA at inference (or merged weights)
-- Minimal **eval** hook via `lm-eval-harness` (optional)
-- **De-identification** pre-processing with Presidio (optional, for data governance)
+- **SFT** on a small curated instruction dataset  
+- **DPO** (Direct Preference Optimization) on paired comparisons (`chosen` vs `rejected`)  
+- **LoRA** adapters via `peft` (keeps base weights frozen by default)  
+- Optional **4-bit**/8-bit loading (`bitsandbytes`) to reduce VRAM  
+- **MLflow** for runs, params, and artifacts (local `./mlruns/`)  
+- **FastAPI** server that loads the LoRA at inference (or merged weights)  
+- Minimal **eval** hook via `lm-eval-harness` (optional)  
+- **De-identification** pre-processing with Presidio (optional, for data governance)  
 
 ---
 
 ## Quickstart
 
-### 0) Environment
+### Environment
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install --upgrade pip
@@ -32,96 +31,173 @@ pip install -r requirements.gpu.txt
 pip install -r requirements.extra.txt
 ```
 
-> If `bitsandbytes` doesn’t install (CPU-only or macOS), set `quantization.load_in_4bit: false` in the config.
+If bitsandbytes doesn’t install (CPU-only or macOS), set quantization.load_in_4bit: false in the config.
 
-### 1) Configure
+### Configure
+
+Edit configs/config.yaml to pick base model, LoRA params, training hyperparams
+
+
+### De-identify your dataset (optional)
+
 ```bash
-cp configs/config.example.yaml configs/config.yaml
-# edit configs/config.yaml to pick base model, LoRA params, training hyperparams
+python scripts/deid_presidio.py \
+  --in data/sft/sample_sft.jsonl \
+  --out data/sft/sample_sft.deid.jsonl
+
 ```
 
-### 2) (Optional) De‑identify your dataset
-```bash
-python scripts/deid_presidio.py   --in data/sft/sample_sft.jsonl   --out data/sft/sample_sft.deid.jsonl
-```
-Update `configs/config.yaml` to point SFT to the de‑identified file.
+### Supervised Fine-Tuning (SFT)
 
-### 3) Supervised Fine-Tuning (SFT)
 ```bash
-python scripts/train_sft.py --config configs/config.yaml
+python -m scripts.train_sft --config configs/config.yaml
 ```
-Artifacts: `outputs/sft_adapter/` (LoRA weights), tokenizer, and MLflow run in `mlruns/`.
+Artifacts: outputs/sft_adapter/ (LoRA weights), tokenizer, and MLflow run in mlruns/.
 
-### 4) Direct Preference Optimization (DPO)
+### Direct Prefrence Optimization (DPO)
+
 ```bash
-python scripts/train_dpo.py --config configs/config.yaml
+python -m scripts.train_dpo --config configs/config.yaml
 ```
-By default, DPO initializes from the SFT adapter (`outputs/sft_adapter/`). Artifacts in `outputs/dpo_adapter/`.
 
-### 5) Serve for inference (FastAPI)
+### Serve for inference (FastAPI)
+
 ```bash
 # Uses base model + LoRA adapter at runtime
 uvicorn serve.fastapi_server:app --reload --port 8000
-# Then: curl -X POST http://localhost:8000/v1/generate -H "Content-Type: application/json" #   -d '{"prompt": "Write a two-sentence project summary.", "max_new_tokens": 128}'
+
+# Then query it (Powershell)
+Invoke-RestMethod -Uri "http://localhost:8000/v1/generate" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"prompt":"Write a two-sentence project summary.","max_new_tokens":128}'
+
 ```
 
-### 6) (Optional) Merge LoRA → full model
+### Merge LoRA → full model (optional)
+
 ```bash
-python scripts/export_lora.py   --base_model TinyLlama/TinyLlama-1.1B-Chat-v1.0   --adapter outputs/dpo_adapter   --out_dir outputs/merged_full_model
-```
-> Merged weights are large; prefer adapters for sharing.
+python scripts/export_lora.py \
+  --base_model TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
+  --adapter outputs/dpo_adapter \
+  --out_dir outputs/merged_full_model
 
-### 7) (Optional) LM Eval Harness
+```
+Merged weights are large. Prefer adapters for sharing
+
+### LM Eval Harness (optional)
+
 ```bash
 # Example: tiny subset for a smoke test
 python eval/run_lmeval.py --model_path outputs/dpo_adapter --task hellaswag --limit 50
 ```
 
----
 
-## Data formats
+### Test
 
-### SFT (JSONL)
-Each line:
-```json
-{"instruction": "Summarize the text", "input": "....", "output": "A concise summary ..."}
-```
-If `input` is empty, it’s omitted in the prompt template.
+Covers config file validity (tests/test_config_loads.py), import and structure of main modules, environment sanity for MLflow and FastAPI
 
-### DPO (JSONL)
-Each line:
-```json
-{"prompt": "How to handle secrets?", "chosen": "Use a password manager...", "rejected": "Email the password."}
-```
-
----
-
-## MLflow
 ```bash
-mlflow ui --backend-store-uri mlruns --port 5000
+pytest -q
 ```
-Open http://localhost:5000 to browse runs, params, and metrics.
 
----
 
-## Config overview (`configs/config.yaml`)
-- `base_model_id`: HF model id (e.g., `TinyLlama/TinyLlama-1.1B-Chat-v1.0`, `gpt2`)
-- `tokenizer_id`: usually same as base
-- `quantization.load_in_4bit`: true/false (requires bitsandbytes + CUDA)
-- `lora`: rank/alpha/dropout + `target_modules` (use `auto` to infer for LLaMA vs GPT2-like)
-- `sft` & `dpo`: dataset paths + training hyperparameters
-- `serve`: adapter to load at runtime
-- `tracking.mlflow_tracking_uri`: defaults to local `mlruns`
+## Architecture 
 
----
+                ┌───────────────────────────────┐
+                │        Data Sources            │
+                │  SFT: instruction → output     │
+                │  DPO: prompt, chosen, rejected │
+                └──────────────┬────────────────┘
+                               │
+                 ┌─────────────▼──────────────┐
+                 │     Pre-processing         │
+                 │  (optional Presidio scrub) │
+                 └─────────────┬──────────────┘
+                               │
+        ┌──────────────────────▼─────────────────────────┐
+        │   Training Scripts (SFT / DPO, LoRA adapters)  │
+        │ - PEFT + TRL + Transformers                    │
+        │ - MLflow logging for runs/artifacts            │
+        └──────────────────────┬─────────────────────────┘
+                               │
+                 ┌─────────────▼──────────────┐
+                 │       Outputs              │
+                 │ - LoRA adapters (SFT, DPO) │
+                 │ - Checkpoints, tokenizer   │
+                 └─────────────┬──────────────┘
+                               │
+                 ┌─────────────▼──────────────┐
+                 │    Inference Server        │
+                 │ (FastAPI + HuggingFace)    │
+                 └─────────────┬──────────────┘
+                               │
+                 ┌─────────────▼──────────────┐
+                 │       REST Clients         │
+                 │  (curl, Postman, UI apps)  │
+                 └────────────────────────────┘
 
-## Notes & Limits
-- Training large models requires GPU VRAM. For CPU-only, use tiny models (`gpt2`, `TinyLlama`) and small batch sizes.
-- `bitsandbytes` is optional; you can disable quantized loading entirely.
-- This repo uses a tiny sample dataset for demonstration only; replace with your domain data.
-- Always de‑identify sensitive data before training if privacy matters.
 
----
+## Flow Diagram
+
+           ┌────────────┐
+           │ config.yaml│
+           └─────┬──────┘
+                 │
+                 ▼
+        ┌───────────────────┐
+        │  train_sft.py     │
+        │  (SFT training)   │
+        └────────┬──────────┘
+                 │
+                 ▼
+        ┌───────────────────┐
+        │  train_dpo.py     │
+        │  (DPO fine-tune)  │
+        └────────┬──────────┘
+                 │
+                 ▼
+        ┌───────────────────┐
+        │  MLflow tracking  │
+        └────────┬──────────┘
+                 │
+                 ▼
+        ┌───────────────────┐
+        │  FastAPI server   │
+        │  (load LoRA)      │
+        └────────┬──────────┘
+                 │
+                 ▼
+        ┌───────────────────┐
+        │  Client request   │
+        │  (curl/UI)        │
+        └───────────────────┘
+
+## Config Toggles
+
+| Section                          | Key                                        | Description                                 |
+| -------------------------------- | ------------------------------------------ | ------------------------------------------- |
+| **base_model_id**                | e.g., `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | HF model for fine-tuning                    |
+| **quantization.load_in_4bit**    | true/false                                 | Enables 4-bit quantization (saves VRAM)     |
+| **lora.r / alpha / dropout**     | int/float                                  | LoRA rank, scaling, and dropout hyperparams |
+| **lora.target_modules**          | list or `auto`                             | Which attention layers to adapt             |
+| **sft.dataset_path**             | path                                       | Path to JSONL dataset for SFT               |
+| **sft.num_train_epochs**         | int                                        | Number of fine-tuning epochs                |
+| **dpo.dataset_path**             | path                                       | JSONL dataset for DPO preference tuning     |
+| **serve.adapter_path**           | path                                       | Which LoRA adapter to load for inference    |
+| **tracking.mlflow_tracking_uri** | path                                       | Local or remote MLflow tracking store       |
+
+
+## Limits
+
+| Category         | Constraint                                            | Workaround                                      |
+| ---------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| **Hardware**     | CPU-only training is slow; large models need GPU VRAM | Use small models like `TinyLlama` or `gpt2`     |
+| **Quantization** | `bitsandbytes` unavailable on macOS/CPU               | Disable `quantization.load_in_4bit`             |
+| **Dataset size** | Sample data only (few records)                        | Replace with your domain-specific JSONL         |
+| **Evaluation**   | LM Eval harness is minimal                            | Expand evaluation tasks in `eval/run_lmeval.py` |
+| **Privacy**      | No built-in anonymization beyond Presidio             | Run `deid_presidio.py` before training          |
+| **Merge size**   | Full merged model is large                            | Keep LoRA adapters instead of merging           |
 
 ## License
-MIT (see LICENSE)
+
+MIT (see License)

@@ -9,9 +9,9 @@ def main():
     args = ap.parse_args()
 
     # ---- read config
-    with open(args.config, "r") as f:
+    with open(args.config, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
-
+    
     # ---- tracking
     mlflow.set_tracking_uri(cfg.get("tracking", {}).get("mlflow_tracking_uri", "mlruns"))
     mlflow.set_experiment("sft")
