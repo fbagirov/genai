@@ -1,10 +1,7 @@
 # genai-rag-citations
 
-<<<<<<< HEAD
 # genai-rag-citations
 
-=======
->>>>>>> 548c960 (added genai_feat-private-assistant)
 
 A compact RAG system that ingests local PDFs, builds **hybrid search** (BM25 + dense), and answers questions with **inline citations** and a **confidence score**. Includes **RAGAS** evaluation, simple latency profiling, and optional reranking.
 
@@ -24,7 +21,8 @@ A compact RAG system that ingests local PDFs, builds **hybrid search** (BM25 + d
 ## Quickstart Demo
 ```bash
 # 1) Python env
-uv venv .venv && source .venv/bin/activate # or: python -m venv .venv
+uv venv .venv # or: python -m venv .venv
+source .venv/bin/activate # or: .venv/Script/Activate.ps1 (for Windows PowerShell) 
 
 # 2) Install deps
 pip install -r requirements.txt
@@ -82,8 +80,6 @@ Query -> HybridRetriever (BM25 + Dense [+ optional reranker]) -> Generator(LLM) 
 Inline citations + confidence
 ```
 
-<<<<<<< HEAD
-=======
 # Using Docker
 
 Build the container
@@ -101,8 +97,6 @@ docker run --rm -p 7860:7860 \
 
 ```
 
-
->>>>>>> 548c960 (added genai_feat-private-assistant)
 ## Flow Diagram
 ```
 

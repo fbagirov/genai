@@ -30,7 +30,8 @@ The base models (Llama, GPT, etc.) are trained on some text - books, articles, W
 
 ### Environment
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv 
+source .venv/bin/activate # alternatively .venv/Script/Activate.ps1 (for Windows PowerShell)
 pip install --upgrade pip
 pip install -r requirements.txt
 # (Optional, GPU/NVIDIA) quantization + speedups
