@@ -1,7 +1,10 @@
 # genai-rag-citations
 
+<<<<<<< HEAD
 # genai-rag-citations
 
+=======
+>>>>>>> 548c960 (added genai_feat-private-assistant)
 
 A compact RAG system that ingests local PDFs, builds **hybrid search** (BM25 + dense), and answers questions with **inline citations** and a **confidence score**. Includes **RAGAS** evaluation, simple latency profiling, and optional reranking.
 
@@ -79,6 +82,27 @@ Query -> HybridRetriever (BM25 + Dense [+ optional reranker]) -> Generator(LLM) 
 Inline citations + confidence
 ```
 
+<<<<<<< HEAD
+=======
+# Using Docker
+
+Build the container
+
+bash ```
+docker build -t genai-rag-citations:latest .
+```
+
+Run the app 
+bash ```
+docker run --rm -p 7860:7860 \
+  -e OLLAMA_URL=http://host.docker.internal:11434 \
+  -e CONFIG_PATH=configs/config.yaml \
+  genai-rag-citations:latest
+
+```
+
+
+>>>>>>> 548c960 (added genai_feat-private-assistant)
 ## Flow Diagram
 ```
 

@@ -1,0 +1,14 @@
+llm:
+  provider: ollama
+  model: llama3:instruct
+  temperature: 0.2
+  max_new_tokens: 512
+
+privacy:
+  telemetry: false
+  persist_history: false
+  log_requests: false
+
+server:
+  host: 127.0.0.1
+  port: 8000

@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 # Python caches, environments, virtual environments, temporary files and logs
 __pycache__/
 .ruff_cache/
@@ -31,3 +32,75 @@ mlruns/
 
 # For Mac users
 .DS_Store
+=======
+# Python and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# environment and config
+.env
+.env.*
+*.local
+*.bak
+*.tmp
+*.log
+
+# Build/packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# artifacts
+# No chat histories or telemetry persisted by default
+history/
+# Chroma / vector stores (if you add embeddings later)
+.chroma/
+.bm25.pkl
+# MLflow or similar experiment logs (future-proof)
+mlruns/
+outputs/
+
+# IDEs
+.vscode/
+.idea/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# For Mac users
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+*.tar
+docker-compose.override.yml
+
+# Temporary
+*.swp
+*.swo
+*.old
+*.out
+*.cache/
+*.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Keys
+*.pem
+*.crt
+*.key
+*.p12
+credentials.json
+secrets.yaml
+>>>>>>> 548c960 (added genai_feat-private-assistant)

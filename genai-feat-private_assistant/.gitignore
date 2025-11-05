@@ -1,0 +1,20 @@
+# LLM
+OllamaSetup.exe
+
+# Python / Virtual Env 
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# Environment/Config
+.env
+.env.*
+*.ini
+*.cfg
+*.toml
+*.yaml~
+*.bak*
