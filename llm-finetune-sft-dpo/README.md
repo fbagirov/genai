@@ -4,7 +4,15 @@
 
 > **Default base model:** `TinyLlama/TinyLlama-1.1B-Chat-v1.0` (works on CPU albeit slow). You can swap for `gpt2` for a super-light demo or any 7B+ model if you have GPU VRAM.
 
----
+
+## What is Fine Tuning? How is it different from prompting? 
+
+The base models (Llama, GPT, etc.) are trained on some text - books, articles, Wikipedia, Reddit, etc. When the model is trained, it starts with random weights assigned to words and patterns. During traing it sees millions of examples that are similar to each other (for example, for "How are ___?" the most fit word is "you"). Each time it predicts wrong, the algorithm shifts the weights slightly so the next time it is closer to the correct answer. After substantial training, those shifts accumulate into trillions of fine-tuned numbers - the based model weights. 
+
+**Prompting** - When you want to steer the model by wording the prompt differently (zero-shot, few-shot, chain-of-thought, etc.), the base model weights do not change. Also, for the same task, you'll have to prompt the model each time (best for ad-hoc tasks)
+
+**Fine-tuning** - When you fine-tune, you train a new model checkpoints so that it learns patterns from many examples (and store the changes after the fine-tuning in LoRA adapters). The model's weights in this case will change. In this case, you can teach the model once and it will produce the result you need by default (best for scalable, domain-specific generation)
+
 
 ## Features
 - **SFT** on a small curated instruction dataset  
