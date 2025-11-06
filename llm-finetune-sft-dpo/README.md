@@ -78,7 +78,7 @@ uvicorn serve.fastapi_server:app --reload --port 8000
 # Then query it (Powershell)
 Invoke-RestMethod -Uri "http://localhost:8000/v1/generate" `
   -Method POST -ContentType "application/json" `
-  -Body '{"prompt":"Write a two-sentence project summary.","max_new_tokens":128}'
+  -Body '{"prompt":"What are USMC 5th general order?","max_new_tokens":128}'
 
 ```
 
