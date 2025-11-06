@@ -1,19 +1,49 @@
-
-# Python
+# Python / Environment
 __pycache__/
 *.pyc
-.venv/
-.env
+*.pyo
+*.pyd
 *.log
 *.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
 
-# Checkpoints / Artifacts
+# Virtual environments
+.venv/
+env/
+venv/
+
+
+# Project Artifacts
+# LoRA, checkpoints, adapters, and merged models
 outputs/
+# MLflow tracking logs and metrics
 mlruns/
-
-# HF caches (optional)
+# Cached HF models/tokenizers
 ~/.cache/huggingface/
 .hf_cache/
+# Bitsandbytes cache
+~/.cache/torch_extensions/
 
-# Misc
-.DS_Store
+
+# Data / Datasets
+# Training data and generated data
+data/private/
+data/raw/
+data/tmp/
+data/sft/mydata.jsonl
+data/sft/*.deid.jsonl
+data/dpo/*.jsonl
+
+# Prevent accidental uploads of personal datasets
+mydata.jsonl
+
+
+# Configuration / Secrets
+.env
+.env.*
+credentials.json
+se

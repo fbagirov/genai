@@ -111,7 +111,7 @@ pytest -q
 
 ## Fine tuning using your own data
 
-1. Prepare your training data. 
+**1. Prepare your training data.**
 
 Convert your inputs and outputs (a prompt and a resulting document, respectively) into the SFT format:
 
@@ -127,7 +127,7 @@ Convert your inputs and outputs (a prompt and a resulting document, respectively
 
 Place all examples (dozens or hundreds into data/sft/mydata.jsonl)
 
-2. Train SFT
+**2. Train SFT**
 
 Update configs/configmyaml
 
@@ -146,7 +146,7 @@ python -m scripts.train_sft --config configs/config.yaml
 ```
 ...which will result in your "new style" adapter (located in outputs/stf_adapter/ )
 
-3. Add Preference Data (optional)
+**3. Add Preference Data (optional)**
 
 Create a DPO dataset if you can rank outputs by effectiveness ("document A got better engagement than document B"):
 
@@ -164,7 +164,7 @@ python -m scripts.train_dpo --config configs/config.yaml
 
 ...which will result in an adapter that prefers your best patterns (located in outputs/dpo_adapter)
 
-4. Serve and generate
+**4. Serve and generate**
 
 Start the inference server: 
 
@@ -181,7 +181,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/v1/generate" `
 
 ```
 
-5. Iterate
+**5. Iterate**
 
 - Inspect outputs - adjust datasets (add better examples, remove weak ones)
 - Re-train SFT, optionally re-run DPO
