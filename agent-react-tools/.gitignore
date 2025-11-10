@@ -1,11 +1,83 @@
-
+# Python / Environment
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# Virtual environments
 .venv/
+.venv-agentic/
+env/
+venv/
+
+
+# Environment & Secrets
 .env
 .env.*
+
+
+# Project Artifacts / Runs
 runs/
 outputs/
 mlruns/
 eval/report.json
+
+# Data / Cache / Temp Files
+*.cache/
+.cache/
+tmp/
+*.out
+*.err
+*.pid
+*.csv
+*.jsonl
+
+# Tools / Dependencies
+# Hugging Face, transformers, bitsandbytes, etc.
+~/.cache/
+~/.huggingface/
+.hf_cache/
+~/.cache/torch_extensions/
+
+# Notebooks / Checkpoints
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+*.ipynb~
+
+# Build / Packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.code-workspace
+__init__.pyc
+
+# Docker / System
 *.log
+*.tar
+*.gz
+*.zip
+*.bak
+*.swp
+*.swo
+
+# Test / Reports
+coverage/
+htmlcov/
+pytest_cache/
+.tox/
+.nox/
+.pytest_cache/
+report.json
