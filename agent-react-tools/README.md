@@ -75,7 +75,9 @@ SEARCH_PROVIDER=tavily
 
 
 # Run a single goal
-python run_agent.py --goal "Find the capital of France and save it to output.txt"
+python run_agent.py --goal "Find the capital of Azerbaijan and save it to output.txt"
+
+# The output should be in output.txt file, not the command line.
 
 # Evaluate built-in tasks (10 goals)
 python eval/run_tasks.py
