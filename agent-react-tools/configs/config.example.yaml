@@ -1,0 +1,19 @@
+
+max_steps: 12
+
+model:
+  provider: local   # local | openai (not used by default)
+  # openai_model: gpt-4o-mini
+
+search:
+  provider: tavily  # tavily | stub
+
+python_exec:
+  timeout_sec: 8
+
+verifier:
+  max_answer_chars: 2000
+  require_citation_for_web: true
+
+logging:
+  verbose: true

@@ -1,44 +1,12 @@
 
-<<<<<<< HEAD
-# Python caches, environments, virtual environments, temporary files and logs
-__pycache__/
-.ruff_cache/
-.pytest_cache/
-.ipynb_checkpoints/
-*.pyc
-.venv/
-.env
-.env.local
-.env.*
-*.log
-*.tmp
-*.bak
 
-# docs, embeddings and index
-sample_docs/
-docs/
-.chroma/
-.bm25.pkl
-
-# Checkpoints / Artifacts
-outputs/
-mlruns/
-
-# packaging leftovers
-/dist/
-/build/
-/egg-info/
-
-
-# For Mac users
-.DS_Store
-=======
 # Python and virtual environments
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .venv/
+.venv-rag-citations/
 env/
 venv/
 
@@ -62,6 +30,7 @@ history/
 # Chroma / vector stores (if you add embeddings later)
 .chroma/
 .bm25.pkl
+
 # MLflow or similar experiment logs (future-proof)
 mlruns/
 outputs/

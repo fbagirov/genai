@@ -13,6 +13,7 @@ Thumbs.db
 
 # Virtual environments
 .venv/
+.venv-llm-finetune/
 env/
 venv/
 

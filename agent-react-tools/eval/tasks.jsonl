@@ -1,0 +1,10 @@
+{"goal": "Find the capital of France and write it to output.txt"}
+{"goal": "Compute 2+2 using python and return the result"}
+{"goal": "Create a file named notes.txt and write 'hello agent' into it"}
+{"goal": "Search the web for 'What is HTTP?' and summarize in 1-2 sentences"}
+{"goal": "Read notes.txt and report its contents"}
+{"goal": "Define AI in one sentence"}
+{"goal": "What is the square of 13? Use python."}
+{"goal": "Write a haiku about the ocean into ocean.txt"}
+{"goal": "Who wrote 'Pride and Prejudice'? Use the web and cite."}
+{"goal": "List three planets. Save into planets.txt"}
