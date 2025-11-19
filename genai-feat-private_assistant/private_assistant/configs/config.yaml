@@ -4,6 +4,11 @@ llm:
   temperature: 0.2
   max_new_tokens: 512
 
+safety:
+  guardrails: true              # apply policies/guardrails.yaml
+  pii_scrub: false              # scrub PII via Presidio pre/post stages
+
+
 privacy:
   telemetry: false
   persist_history: false

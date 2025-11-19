@@ -39,16 +39,111 @@ pip install -r requirements.txt
 
 ## Configure configs/config.yaml
 
+Temperature defines how "creative" the answers are - the higher the temp, the more creative they are. The lower the temp, the more the answers are on point. For example, randomness 0 = strict; 1+ = creative
+
+Telemetry 
+   - false - never send your telemetry (privacy reasons)
+
+log_requests  
+   - true (for debugging)
+   - false (no HTTP access, no API body & access logs)
+
+guardrails: 
+   - true - app checks prompts/outputs against policies/guardrails.yaml (tweak the yaml policy to be stricter (refuse  harmful requests, mask sensitive requests, etc.) or loser). 
+
+pii_scrub
+   - true - runs Presidio to detect and anonymize PII in prompt queries (requires the Presidio and english SpaCy model installed)
+
+
 bash ```
+llm:
+  provider: ollama        # ollama or openai
+  model: llama3:instruct  # model name (llama or gpt2 or >gpt3 (paid version))
+  temperature: 0.2        # randomness 0 = strict; 1+ = creative
+  max_new_tokens: 512     # maximum tokens generated per reply
+
+privacy:
+  telemetry: false        # false by default to protect your privacy.
+  persist_history: false  # keep chat only in memory, no files
+  log_requests: false     # false - no HTTP access, no API body & access logs. 
+
+safety: 
+  guardrails: true        # apply policies/guardrails.yaml
+  pii_scrub: false        # scrub PII via Presidio pre/post stages
+
+paths:
+  policy_file: policies/guardrails.yaml
+
+```
+
+### Sample configurations
+
+#### Ultra private, offline
+
+This configuration will generate short, consistent replies. Nothing will be written on your hard drive, no longs. Ensure you donwload the LLM locally and no keys are set. 
+
+bash ```
+
 llm:
   provider: ollama
   model: llama3:instruct
+  temperature: 0.2
+  max_new_tokens: 256
 privacy:
   telemetry: false
   persist_history: false
   log_requests: false
+safety:
+  guardrails: true
+  pii_scrub: false
 
 ```
+
+### Longer answers
+
+More eloquent wording, longer outputs 
+
+bash```
+
+llm:
+  temperature: 0.5
+  max_new_tokens: 800
+
+```
+
+### Creative/brainstorming
+
+More creative, novel ideas. Set the guardrails to be able to still catch unsafe content. 
+
+bash```
+
+llm:
+  temperature: 0.9
+  max_new_tokens: 512
+safety:
+  guardrails: true
+
+
+```
+### Strict/enforced compliance/sensitive data
+
+PII in the input is scrubbed. Nothing is logged. 
+
+bash```
+
+privacy:
+  persist_history: false
+  log_requests: false
+safety:
+  guardrails: true
+  pii_scrub: true
+
+```
+
+# Setting policies
+
+
+
 
 ## Run the API
 
@@ -148,3 +243,14 @@ Response → returned to user (not stored)
 - No streaming yet (synchronous responses).
 - PII scrub requires extra deps + spaCy model (en_core_web_sm).
 - Guardrails are minimal demos—extend for enterprise use.
+
+
+# Troubleshooting
+
+- Model not found
+   - make sure you pull the model
+- Empty responses 
+   - reduce temperature
+- PII scrubbing 
+   - turning this on without installing Presidio will raise an error. Install extras
+   - Install SpaCy (python -m spacy download en_core_web_[sm|lg])
