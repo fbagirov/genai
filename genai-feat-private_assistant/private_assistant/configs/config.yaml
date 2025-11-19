@@ -1,8 +1,9 @@
 llm:
   provider: ollama
   model: llama3:instruct
-  temperature: 0.2
-  max_new_tokens: 512
+  temperature: 0.9  # 0.2
+  max_new_tokens: 512 
+  
 
 safety:
   guardrails: true              # apply policies/guardrails.yaml
