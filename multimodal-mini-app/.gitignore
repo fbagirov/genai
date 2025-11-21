@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
+.venv-multimodal/
 .env
 .DS_Store
 Thumbs.db
