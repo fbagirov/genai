@@ -1,23 +1,84 @@
-embedding:
-  provider: sentence_transformers
-  model: intfloat/e5-base-v2
-  device: auto
+ingestion:
+  input_dir: docs                  # where PDFs/TXTs are read from
+  include_glob: ["**/*.pdf","**/*.txt"]
+  chunk_size: 800                  # characters or tokens per chunk
+  chunk_overlap: 100               # overlap between chunks (to keep context continuity)
+  splitter: "recursive_text"       # or "sentence","token" depending on your code
+  add_metadata:
+    filename: true
+    page_number: true
+
+embeddings:
+  provider: "sentence-transformers" # or "openai"
+  model_name: "intfloat/e5-base"    # e5, bge, etc. (must match your ingest & query)
+  device: "cpu"                     # "cuda" if you have GPU
+  normalize: true                   # L2-normalize vectors (often improves cosine search)
+  batch_size: 64
+
+vectorstore:
+  type: "chroma"                    # or "pgvector", "faiss"
+  persist_dir: ".chroma"            # where to keep the vector DB on disk
+  collection_name: "rag-citations"
+
+bm25:
+  enabled: true                     # enables sparse retrieval
+  index_path: "bm25.pkl"            # saved BM25 index (don’t commit it to git)
+
+retriever:
+  mode: "hybrid"                    # "dense" | "sparse" | "hybrid"
+  k: 6                              # top-k passages to forward to the LLM
+  fetch_k: 20                       # initial pool before re-ranking (if used)
+  alpha: 0.5                        # hybrid weight: dense vs. sparse blend (0..1)
 
 reranker:
-  enabled: false
-  model: BAAI/bge-reranker-base
+  use_reranker: true                # cross-encoder re-ranker on the initial pool
+  model_name: "BAAI/bge-reranker-base"
+  top_n: 6                          # keep top_n after re-ranking (usually = retriever.k)
+  device: "cpu"                     # or "cuda"
 
-llm:
-  provider: ollama
-  model: llama3:instruct
-  temperature: 0.0
+generator:
+  provider: "ollama"                # "ollama" (local) | "openai" | "vllm" etc.
+  model: "llama3:instruct"
+  temperature: 0.2
+  max_new_tokens: 400
+  prompt_template: "answer_with_citations.txt"  # prompt that formats inline [n] cites
 
-retrieval:
-  k_dense: 8
-  k_bm25: 6
-  weight_dense: 0.7
-  weight_bm25: 0.3
+citations:
+  max_chunks: 4                     # max distinct sources to cite inline
+  style: "inline"                   # inline “[1]” vs. other styles
+  deduplicate: true                 # avoid citing the same source multiple times
 
-paths:
-  persist_dir: .chroma
-  bm25_cache: .bm25.pkl
+server:
+  host: "127.0.0.1"
+  port: 8000
+
+eval:
+  dataset_path: "eval/sample.eval.json" # small hand-labeled QA set
+  ragas:
+    faithfulness_weight: 0.5
+    answer_relevancy_weight: 0.5
+
+
+# embedding:
+#   provider: sentence_transformers
+#   model: intfloat/e5-base-v2
+#   device: auto
+
+# reranker:
+#   enabled: false
+#   model: BAAI/bge-reranker-base
+
+# llm:
+#   provider: ollama
+#   model: llama3:instruct
+#   temperature: 0.0
+
+# retrieval:
+#   k_dense: 8
+#   k_bm25: 6
+#   weight_dense: 0.7
+#   weight_bm25: 0.3
+
+# paths:
+#   persist_dir: .chroma
+#   bm25_cache: .bm25.pkl

@@ -1,0 +1,3 @@
+{"type": "caption", "provider": "openai", "file": "eval/samples/street_sign.jpg", "expected_contains": ["street", "sign"]}
+{"type": "ocr", "file": "eval/samples/receipt.png", "expected_contains": ["Total", "$"]}
+{"type": "vqa", "provider": "openai", "file": "eval/samples/desk.jpg", "question": "How many monitors are on the desk?", "expected_exact": "2"}
