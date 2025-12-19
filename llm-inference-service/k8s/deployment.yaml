@@ -1,0 +1,51 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-inference-service
+  labels:
+    app: llm-inference-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: llm-inference-service
+  template:
+    metadata:
+      labels:
+        app: llm-inference-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: gateway
+          image: yourrepo/llm-inference-service:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: VLLM_BASE_URL
+              value: "http://vllm-openai:8000/v1"
+            - name: MODEL_NAME
+              value: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"

@@ -1,0 +1,48 @@
+app:
+  name: "Outcome Writer"
+  environment: "dev"                 # dev|prod
+  log_level: "INFO"
+
+data:
+  dataset_path: "data/simulated_emails.jsonl"
+  preference_pairs_path: "data/preference_pairs.jsonl"
+  success_outcomes: ["won"]          # which outcomes count as 'successful'
+
+embeddings:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+vectorstore:
+  type: "chroma"
+  persist_dir: ".chroma"             # local on-disk DB (do NOT commit)
+  collection: "sales_emails"
+  metadata_filter:
+    only_success: true               # index/retrieve only successful examples
+
+retrieval:
+  k: 5                               # number of successful examples to condition generation
+  min_similarity: 0.15               # drop weak matches (approx similarity 0..1)
+  diversify: true                    # lightweight dedupe across near-duplicates
+
+generation:
+  provider: "mock"                   # mock | openai
+  openai_model: "gpt-4o-mini"
+  temperature: 0.3
+  max_new_tokens: 320
+  include_examples_in_output: false
+  include_scoring: true
+
+privacy:
+  store_user_inputs: false
+  redact_emails_in_logs: true
+
+server:
+  host: "127.0.0.1"
+  port: 8088
+
+ui:
+  host: "127.0.0.1"
+  port: 8501
+
+eval:
+  test_prompts: 15
+  seed: 7

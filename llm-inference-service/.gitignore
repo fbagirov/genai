@@ -1,0 +1,14 @@
+
+__pycache__/
+*.pyc
+.venv/
+.venv-llm-inference/
+.env
+.DS_Store
+Thumbs.db
+dist/
+build/
+*.log
+coverage/
+htmlcov/
+pytest_cache/

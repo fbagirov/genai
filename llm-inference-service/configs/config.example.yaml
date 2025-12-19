@@ -1,0 +1,22 @@
+
+server:
+  host: 0.0.0.0
+  port: 8080
+
+upstream:
+  base_url: http://127.0.0.1:8001/v1   # point to vLLM/OpenAI-compatible base URL
+  mode: completions                    # completions | chat
+
+inference:
+  model_name: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+  max_new_tokens: 256
+  temperature: 0.2
+
+timeouts:
+  connect: 5.0
+  read: 60.0
+
+otel:
+  enabled: false
+  service_name: llm-inference-service
+  otlp_endpoint: http://127.0.0.1:4318
