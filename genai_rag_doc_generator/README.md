@@ -38,10 +38,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 1) Build the retrieval index (not required for this versino with tfidf, but is required if you build with vector database (chromadb, etc.))
+### 1) (Optional) Build the retrieval index (not required for this versino with tfidf, but is required if you build with vector database (chromadb, etc.))
 
-
-```
 
 ### 2) Run the API server
 ```bash
