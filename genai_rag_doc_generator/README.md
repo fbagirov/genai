@@ -75,21 +75,6 @@ streamlit run ui/streamlit_app.py
 
 ---
 
-## Flow diagram
-```mermaid
-flowchart TD
-  A[Scenario inputs] --> B[Retriever]
-  B --> C[Chroma Search<br/>(success-only)]
-  C --> D[Top-k successful examples]
-  D --> E[Prompt builder]
-  E --> F[Generator<br/>mock or openai]
-  F --> G[Draft email]
-  G --> H[Optional scorer]
-  H --> I[Return draft + score]
-```
-
----
-
 ## Config toggles (configs/config.yaml)
 
 ### Retrieval
