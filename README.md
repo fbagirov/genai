@@ -22,13 +22,13 @@ These projects are for educational reference only. They are implementations desi
 **Why AI-assisted code is used intentionally instead of coding from scratch:**
 
 - Generative AI systems are complex, multi-component, and rapidly evolving.
-- The value of an engineer in this space is not typing speed, but:
-- Correct system decomposition
-- Safe and testable architectures
-- Evaluation design (latency, faithfulness, robustness)
-- Security, privacy, and data-handling decisions
-- Understanding failure modes
-- Making tradeoffs explicit and configurable
+- The value of an engineer in this environment is:
+    - Correcting system decomposition
+    - Safe and testable architectures
+    - Evaluation design (latency, faithfulness, robustness)
+    - Security, privacy, and data-handling decisions
+    - Understanding failure modes
+    - Making tradeoffs explicit and configurable
 
 **This repo was not built using vibe coding!**
 
