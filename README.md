@@ -2,6 +2,15 @@ This repository contains a curated collection of Generative AI system examples c
 
 These projects are for educational reference only. They are implementations designed to demonstrate architecture, engineering tradeoffs, and production-ready patterns, not polished end-user products.
 
+**Apps in this repo**
+- *genai-feat-private_assisant* - a privacy-first, local-only ChatGPT-like AI chat assistant with minimal data exposure, and configurable guardrails. No wifi needed.
+- *genai_rag_alice* - a Retrieval Augumented Generation (RAG) app, that answers questions from "Alice in Wonderland" book
+- *genai_rag_citations* - a RAG app that ingests your PDFs, builds **hybrid search** (BM25 + dense), and answers questions with **inline citations** and a **confidence score**. 
+- *genai_rag_doc_generator* - a RAG app that, given a labeled set of emails resulting in successful outcomes (simulated) generates an email text that will likely to result in a successful outcome. 
+- *llm-finetune-sft-dpo* -  example of fine-tuning of a small instruction model with Supervised Fine-Tuning (SFT) and comparing against preference optimization (DPO). 
+- *multimodal-mini-app* - an app that takes input of images or PDFs, captions images, run OCR, and answers questions about images or PDFs.
+- *llm-inference-service* - an example of a prdocution-ready inference microservice 
+
 **What this repo is:**
 
 - A portfolio of GenAI system patterns
