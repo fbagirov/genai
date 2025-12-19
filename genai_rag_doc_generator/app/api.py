@@ -1,78 +1,133 @@
-import os
-from typing import Optional, List, Dict, Any
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
+"""
+FastAPI service for Outcome Writer:
+Generates sales emails conditioned on historically successful examples.
+
+Architecture:
+- TF-IDF retrieval over "won" emails
+- Simple generation logic (mock / placeholder for LLM)
+- Optional outcome scoring stub
+"""
+
 import yaml
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional, List
 
-from app.retriever import Retriever
-from app.generator import Generator
-from app.scorer import SuccessScorer
+from app.retriever_tfidf import TfidfRetriever
 
-CONFIG_PATH_DEFAULT = "configs/config.yaml"
 
-def load_config(path: str) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+# ---------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------
+
+CONFIG_PATH = "configs/config.yaml"
+
+with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+    CFG = yaml.safe_load(f)
+
+
+# ---------------------------------------------------------------------
+# Initialize components
+# ---------------------------------------------------------------------
+
+retriever = TfidfRetriever(
+    data_path=CFG["data"]["dataset_path"]
+)
+
+app = FastAPI(
+    title="Outcome Writer API",
+    description="Generate sales emails conditioned on previously successful examples",
+    version="0.1.0",
+)
+
+
+# ---------------------------------------------------------------------
+# Request / Response schemas
+# ---------------------------------------------------------------------
 
 class GenerateEmailRequest(BaseModel):
-    industry: str
-    persona: str
-    product: str
-    value_prop: str
-    goal: str = Field(default="book a 15-min call")
-    tone: str = Field(default="consultative")
-    constraints: Optional[str] = None
-    company_name: Optional[str] = None
-    sender_name: str = "Feyzi"
-    sender_title: str = "AI/ML Engineer"
-    sender_company: str = "Outcome Writer"
-    include_examples: bool = False
+    goal: str
+    customer_context: Optional[str] = ""
+    tone: Optional[str] = "professional"
+    k_examples: Optional[int] = 3
+
 
 class GenerateEmailResponse(BaseModel):
-    subject: str
-    body: str
-    retrieved_count: int
-    retrieved_examples: Optional[List[Dict[str, Any]]] = None
-    success_likelihood: Optional[float] = None
-    notes: List[str] = []
+    generated_email: str
+    retrieved_examples: List[str]
 
-app = FastAPI(title="Outcome Writer API", version="0.1.0")
 
-@app.get("/healthz")
-def healthz():
-    return {"status": "ok"}
+# ---------------------------------------------------------------------
+# Helper: simple generation logic (LLM placeholder)
+# ---------------------------------------------------------------------
 
-@app.post("/v1/generate_email", response_model=GenerateEmailResponse)
-def generate_email(req: GenerateEmailRequest):
-    config_path = os.getenv("OUTCOME_WRITER_CONFIG", CONFIG_PATH_DEFAULT)
-    cfg = load_config(config_path)
+def generate_email(
+    goal: str,
+    context: str,
+    examples: List[str],
+    tone: str,
+) -> str:
+    """
+    Simple template-based generator.
+    Replace this with an LLM call later.
+    """
+    header = f"Subject: {goal}\n\n"
+    body = f"Hi,\n\n"
 
-    retriever = Retriever(cfg)
-    generator = Generator(cfg)
-    scorer = SuccessScorer(cfg)
+    if context:
+        body += f"I hope this message finds you well. Based on your context ({context}), "
 
-    examples = retriever.retrieve_success_examples(
-        industry=req.industry,
-        persona=req.persona,
-        product=req.product,
-        value_prop=req.value_prop,
-        tone=req.tone,
-        k=int(cfg["retrieval"]["k"]),
+    body += (
+        f"I wanted to reach out regarding {goal.lower()}.\n\n"
+        f"Below are proven patterns from similar successful outreach:\n\n"
     )
 
-    subject, body, notes = generator.generate(req=req.model_dump(), examples=examples)
+    for i, ex in enumerate(examples, 1):
+        body += f"Example {i}:\n{ex}\n\n"
 
-    score = None
-    if cfg.get("generation", {}).get("include_scoring", True):
-        score = scorer.predict_success_probability(subject=subject, body=body)
+    body += (
+        "Using these principles, I believe we can move forward effectively.\n\n"
+        "Best regards,\n"
+        "Your Name"
+    )
 
-    out = {
-        "subject": subject,
-        "body": body,
-        "retrieved_count": len(examples),
-        "success_likelihood": score,
-        "notes": notes,
-    }
-    if req.include_examples or cfg.get("generation", {}).get("include_examples_in_output", False):
-        out["retrieved_examples"] = examples
-    return out
+    return header + body
+
+
+# ---------------------------------------------------------------------
+# API endpoint
+# ---------------------------------------------------------------------
+
+@app.post("/v1/generate_email", response_model=GenerateEmailResponse)
+def generate_email_endpoint(req: GenerateEmailRequest):
+    """
+    Generate a sales email using retrieved successful examples.
+    """
+
+    # Retrieve similar successful emails
+    examples = retriever.retrieve(
+        query=req.goal + " " + (req.customer_context or ""),
+        k=req.k_examples,
+    )
+
+    # Generate new email
+    email = generate_email(
+        goal=req.goal,
+        context=req.customer_context or "",
+        examples=examples,
+        tone=req.tone,
+    )
+
+    return GenerateEmailResponse(
+        generated_email=email,
+        retrieved_examples=examples,
+    )
+
+
+# ---------------------------------------------------------------------
+# Health check
+# ---------------------------------------------------------------------
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

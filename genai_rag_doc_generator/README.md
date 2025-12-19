@@ -10,6 +10,8 @@ This repository is a **reference implementation** for learning and portfolio dem
 
 > This system improves *consistency and style* by conditioning on successful examples, but it does **not guarantee sales outcomes**.
 
+For this use case I intentionally used TF-IDF retrieval to avoid native dependencies and keep the system fully portable. The retrieval interface is abstracted, so swapping to a vector DB(like ChromaDB) is necessary if the scale requires it.
+
 ---
 
 ## Features
@@ -36,15 +38,16 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 1) Build the retrieval index
-Stores vectors in `.chroma/` (not committed).
-```bash
-python ingest/ingest.py --config configs/config.yaml
+### 1) Build the retrieval index (not required for this versino with tfidf, but is required if you build with vector database (chromadb, etc.))
+
+
 ```
 
 ### 2) Run the API server
 ```bash
 uvicorn app.api:app --host 127.0.0.1 --port 8088 --reload
+streamlit run ui/streamlit_app.py
+
 ```
 
 Test it:
