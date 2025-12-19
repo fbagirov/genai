@@ -1,4 +1,4 @@
-# outcome-writer — Outcome-Conditioned Sales Email Generator
+# Document generator — Success-conditioned Sales Email Generator
 
 **Goal:** Generate e-commerce sales emails that are *more likely* to succeed (result in sales in the outboudn email campaign) by learning from emails that previously restuled in successful outcomes.
 
