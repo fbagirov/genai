@@ -1,0 +1,70 @@
+# LLM
+OllamaSetup.exe
+
+# =========================
+# Private Assistant Repo
+# =========================
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# --- Virtual envs ---
+.venv/
+.venv-*/
+env/
+venv/
+
+# --- Secrets / env files ---
+.env
+.env.*
+*.key
+*.pem
+
+# --- Local config overrides (keep canonical config.yaml committed) ---
+configs/config.local.yaml
+configs/*.local.yaml
+
+# --- Gradio ---
+gradio_cached_examples/
+*.gradio*
+
+# --- Logs / runtime ---
+*.log
+logs/
+tmp/
+*.tmp
+
+# --- Model/runtime artifacts ---
+OllamaSetup.exe
+
+# --- Uploads / extracted text caches (privacy) ---
+uploads/
+attachments_cache/
+*.sqlite3
+
+# --- Optional: if you add local vector db later ---
+.chroma/
+*.pkl
+
+# --- Data (don’t commit private corp data) ---
+docs_private/
+mydata.jsonl
+data_private/

@@ -1,0 +1,44 @@
+llm:
+  provider: ollama
+  model: llama3:instruct
+  temperature: 0.9  
+  max_new_tokens: 512 
+  
+
+safety:
+  guardrails: true              # apply policies/guardrails.yaml
+  pii_scrub: false              # scrub PII via Presidio pre/post stages
+
+
+privacy:
+  telemetry: false
+  persist_history: false
+  log_requests: false
+
+server:
+  host: 127.0.0.1
+  port: 8000
+
+attachments:
+  enabled: true
+
+  # Security/privacy
+  store_uploads: true         # if false, files are processed in-memory and deleted
+  max_file_mb: 10
+  max_total_text_chars: 25000  # cap context injected into the LLM
+
+  # OCR
+  ocr_enabled: true
+  tesseract_cmd: ""            # optional absolute path to tesseract.exe on Windows
+  ocr_lang: "eng"
+
+  # Allowed types
+  allowed_ext:
+    - ".txt"
+    - ".md"
+    - ".pdf"
+    - ".docx"
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+    - ".webp"
