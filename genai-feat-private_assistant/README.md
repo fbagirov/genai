@@ -146,10 +146,10 @@ safety:
 
 
 ## Run the API
-
+Run from the repo root: 
 bash ```
 
-uvicorn server.api:app --host 127.0.0.1 --port 8000 --no-access-log
+python -m uvicorn private_assistant.server.api:app --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
 ## Run health check

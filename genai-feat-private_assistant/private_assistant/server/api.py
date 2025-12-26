@@ -5,10 +5,17 @@ import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Optional
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]  # go up to repo root
+CONFIG_PATH = REPO_ROOT / "configs" / "config.yaml"
+
+with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+    CFG = yaml.safe_load(f)
 
 # Load config (default to package path)
-CONFIG_PATH = os.getenv("CONFIG_PATH", "private_assistant/configs/config.yaml")
-CFG = yaml.safe_load(open(CONFIG_PATH, "r"))
+# CONFIG_PATH = os.getenv("CONFIG_PATH", "private_assistant/configs/config.yaml")
+# CFG = yaml.safe_load(open(CONFIG_PATH, "r"))
 
 LLM_PROVIDER = CFG["llm"]["provider"]
 MODEL = CFG["llm"]["model"]
