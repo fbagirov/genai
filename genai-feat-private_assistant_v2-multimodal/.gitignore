@@ -60,6 +60,11 @@ uploads/
 attachments_cache/
 *.sqlite3
 
+# --- Outputs ---
+outputs/
+*.out
+
+
 # --- Optional: if you add local vector db later ---
 .chroma/
 *.pkl
