@@ -1,3 +1,13 @@
+import sys
+
+# Amazon Linux 2 ships sqlite3 3.7.x; Chroma requires 3.35+.
+# pysqlite3-binary bundles a modern sqlite3 — swap it in before chromadb loads.
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
+except ImportError:
+    pass  # not installed locally (dev machines usually have a new enough sqlite3)
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -31,16 +41,21 @@ def _initialize():
         return
 
     from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEmbeddings
-    from langchain_community.vectorstores import Chroma
 
     token = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
     if not token:
         raise EnvironmentError("HUGGINGFACEHUB_API_TOKEN is not set")
 
+    # huggingface_hub internals (InferenceClient) read HF_TOKEN, not
+    # HUGGINGFACEHUB_API_TOKEN — set both so every HF library is authenticated.
+    os.environ.setdefault("HF_TOKEN", token)
+
     # Use the HuggingFace Inference API — do NOT load the model locally.
     # Loading Llama-3-8B weights locally would require ~16 GB and crash Lambda.
     llm = HuggingFaceEndpoint(
-        repo_id="meta-llama/Meta-Llama-3-8B-Instruct",
+        repo_id="HuggingFaceH4/zephyr-7b-beta",
+        task="text-generation",
+        provider="hf-inference",
         max_new_tokens=256,
         temperature=0.1,
         huggingfacehub_api_token=token,
@@ -49,6 +64,7 @@ def _initialize():
     embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
     # Load persisted store if it exists; otherwise start empty.
+    from langchain_chroma import Chroma
     vector_store = Chroma(
         persist_directory=str(_CHROMA_DIR),
         embedding_function=embedding,

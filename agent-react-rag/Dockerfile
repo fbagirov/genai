@@ -10,7 +10,7 @@ RUN yum install -y gcc10 gcc10-c++ python3-devel && \
 # so source-only edits won't trigger a full pip re-install.
 COPY requirements.txt ./
 RUN python -m pip install --upgrade pip setuptools wheel && \
-    python -m pip install --no-cache-dir -r requirements.txt
+    python -m pip install --no-cache-dir --prefer-binary -r requirements.txt
 
 # Copy application code last so the expensive dependency layer stays cached.
 COPY src/ ${LAMBDA_TASK_ROOT}/src/

@@ -1,0 +1,99 @@
+#!/bin/bash
+# Bootstrap script for the agent-react-rag EC2 instance.
+# Runs once on first boot via cloud-init.
+set -euxo pipefail
+exec > >(tee /var/log/user-data.log | logger -t user-data) 2>&1
+
+AWS_REGION="${region}"
+SSM_HF_TOKEN_PATH="${ssm_hf_token_path}"
+S3_BUCKET="${s3_bucket_name}"
+GITHUB_REPO="${github_repo}"
+APP_SUBDIR="${app_subdir}"
+APP_PORT="${app_port}"
+APP_DIR="/opt/app/$APP_SUBDIR"
+
+# ── 1. Swap (2 GB) ────────────────────────────────────────────────────────────
+# sentence-transformers + torch need ~2 GB RAM; t2.micro only has 1 GB.
+# The swap makes inference slow (~30–60 s) but prevents OOM kills.
+
+if [ ! -f /swapfile ]; then
+  dd if=/dev/zero of=/swapfile bs=128M count=16
+  chmod 600 /swapfile
+  mkswap /swapfile
+  swapon /swapfile
+  echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
+fi
+
+# ── 2. System packages ────────────────────────────────────────────────────────
+
+dnf update -y
+dnf install -y git python3.11 python3.11-pip python3-devel gcc gcc-c++ make
+
+# ── 3. Clone app ──────────────────────────────────────────────────────────────
+
+mkdir -p /opt/app
+if [ -d /opt/app/genai ]; then
+  git -C /opt/app/genai pull --ff-only
+else
+  git clone "$GITHUB_REPO" /opt/app/genai
+fi
+
+# ── 4. Python dependencies ────────────────────────────────────────────────────
+
+cd "$APP_DIR"
+python3.11 -m pip install --upgrade pip
+python3.11 -m pip install --prefer-binary -r requirements.txt
+
+# ── 5. Retrieve HuggingFace token from SSM ───────────────────────────────────
+
+HF_TOKEN=$(aws ssm get-parameter \
+  --name "$SSM_HF_TOKEN_PATH" \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text \
+  --region "$AWS_REGION")
+
+# ── 6. Write environment file ─────────────────────────────────────────────────
+
+cat > "$APP_DIR/.env" <<EOF
+HUGGINGFACEHUB_API_TOKEN=$HF_TOKEN
+HF_TOKEN=$HF_TOKEN
+S3_PDF_BUCKET=$S3_BUCKET
+PORT=$APP_PORT
+EOF
+chmod 600 "$APP_DIR/.env"
+
+# ── 7. Sync PDFs from S3 on startup (optional — bucket may be empty) ──────────
+
+aws s3 sync "s3://$S3_BUCKET/pdfs/" "$APP_DIR/data/pdfs/" \
+  --region "$AWS_REGION" || true
+
+# ── 8. systemd service ────────────────────────────────────────────────────────
+
+cat > /etc/systemd/system/agent-react-rag.service <<'SVCEOF'
+[Unit]
+Description=Agent ReAct RAG Flask Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/app/agent-react-rag
+EnvironmentFile=/opt/app/agent-react-rag/.env
+ExecStart=/usr/bin/python3.11 server.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agent-react-rag
+
+[Install]
+WantedBy=multi-user.target
+SVCEOF
+
+systemctl daemon-reload
+systemctl enable agent-react-rag
+systemctl start agent-react-rag
+
+echo "Bootstrap complete. Service status:"
+systemctl status agent-react-rag --no-pager || true

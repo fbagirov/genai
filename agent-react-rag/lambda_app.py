@@ -112,14 +112,22 @@ def _handle_ingest(event: Dict) -> Dict:
 # ---------------------------------------------------------------------------
 
 def _parse_body(event: Dict):
-    """Return the decoded event body as a dict or string."""
-    body = event.get("body") or ""
-    if isinstance(body, str):
-        try:
-            return json.loads(body) if body else {}
-        except Exception:
-            return body
-    return body
+    """Return the decoded event body as a dict or string.
+
+    Handles two calling conventions:
+    - API Gateway proxy: event has a "body" key (string or None)
+    - Direct Lambda invocation / emulator: the event dict itself is the payload
+    """
+    if "body" in event:
+        body = event["body"] or ""
+        if isinstance(body, str):
+            try:
+                return json.loads(body) if body else {}
+            except Exception:
+                return body
+        return body
+    # Direct invocation — the event is the payload
+    return event
 
 
 def _safe_filename(name: str) -> str:

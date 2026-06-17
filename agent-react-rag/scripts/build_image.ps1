@@ -8,7 +8,8 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-if (-not (docker info > $null 2>&1)) {
+$dockerInfo = docker info 2>&1
+if ($LASTEXITCODE -ne 0) {
     Write-Error "Docker daemon is not running or not accessible. Start Docker Desktop or Docker Engine and try again."
     exit 1
 }
