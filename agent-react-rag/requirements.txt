@@ -1,16 +1,15 @@
-Flask>=2.2
-mangum>=0.14
 python-dotenv>=1.0.1
 boto3>=1.28
-requests>=2.31
-langchain>=0.0.200
-tiktoken==0.11.0
-openai>=1.0
-langchain-huggingface>=0.0.1
-langchain-community>=0.0.20
-langchain-classic>=0.0.8
-chromadb>=0.3.26
+langchain>=0.3
+langchain-core>=0.3
+langchain-huggingface>=0.1
+langchain-community>=0.3
+langchain-text-splitters>=0.3
+chromadb>=0.5
 transformers>=4.43.0
 torch>=2.2; sys_platform != 'darwin'
 accelerate>=0.22.0
-huggingface-hub>=0.16.4
+huggingface-hub>=0.23
+sentence-transformers>=2.2
+tiktoken>=0.7
+pypdf>=3.0

@@ -1,15 +1,19 @@
 FROM public.ecr.aws/lambda/python:3.11
 
-# Install runtime dependencies
-COPY requirements.txt ./
-RUN python -m pip install --upgrade pip setuptools wheel
+# Install system build dependencies first (cached unless this changes)
 RUN yum install -y gcc10 gcc10-c++ python3-devel && \
     ln -sf /usr/bin/gcc10 /usr/bin/gcc && \
-    ln -sf /usr/bin/g++10 /usr/bin/g++ && \
+    ln -sf /usr/bin/g++10 /usr/bin/g++
+
+# Install Python dependencies before copying source code.
+# This layer is cached as long as requirements.txt doesn't change,
+# so source-only edits won't trigger a full pip re-install.
+COPY requirements.txt ./
+RUN python -m pip install --upgrade pip setuptools wheel && \
     python -m pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . ${LAMBDA_TASK_ROOT}
+# Copy application code last so the expensive dependency layer stays cached.
+COPY src/ ${LAMBDA_TASK_ROOT}/src/
+COPY lambda_app.py ${LAMBDA_TASK_ROOT}/
 
-# Lambda handler
 CMD ["lambda_app.lambda_handler"]

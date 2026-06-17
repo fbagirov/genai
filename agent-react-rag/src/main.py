@@ -1,80 +1,117 @@
-﻿from pathlib import Path
+import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-env_path = Path(__file__).resolve().parents[1] / ".env"
-project_root = Path(__file__).resolve().parents[1]
-load_dotenv(dotenv_path=env_path)
+# Lambda's LAMBDA_TASK_ROOT is read-only; all writes must go to /tmp.
+_IS_LAMBDA = bool(os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+if _IS_LAMBDA:
+    _DATA_DIR = Path("/tmp/rag_data")
+    _CHROMA_DIR = Path("/tmp/chroma_db")
+else:
+    _project_root = Path(__file__).resolve().parents[1]
+    load_dotenv(_project_root / ".env")
+    _DATA_DIR = _project_root / "data" / "pdfs"
+    _CHROMA_DIR = _project_root / "data" / "chroma_db"
+
+_DATA_DIR.mkdir(parents=True, exist_ok=True)
+_CHROMA_DIR.mkdir(parents=True, exist_ok=True)
 
 _initialized = False
 _llm = None
+_vector_store = None
 _retriever = None
-_message = None
+_prompt_template = None
 
 
 def _initialize():
-    global _initialized, _llm, _retriever, _message
+    global _initialized, _llm, _vector_store, _retriever, _prompt_template
 
     if _initialized:
         return
 
-    from langchain_huggingface import HuggingFacePipeline, HuggingFaceEmbeddings
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_community.document_loaders import PyPDFLoader
-    from langchain_classic.text_splitter import TokenTextSplitter
-    from langchain_community.vectorstores.chroma import Chroma
+    from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEmbeddings
+    from langchain_community.vectorstores import Chroma
 
-    llm = HuggingFacePipeline.from_model_id(
-        model_id="meta-llama/Meta-Llama-3-8B",
-        task="text-generation",
-        pipeline_kwargs={"max_length": 512, "max_new_tokens": 100},
+    token = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
+    if not token:
+        raise EnvironmentError("HUGGINGFACEHUB_API_TOKEN is not set")
+
+    # Use the HuggingFace Inference API — do NOT load the model locally.
+    # Loading Llama-3-8B weights locally would require ~16 GB and crash Lambda.
+    llm = HuggingFaceEndpoint(
+        repo_id="meta-llama/Meta-Llama-3-8B-Instruct",
+        max_new_tokens=256,
+        temperature=0.1,
+        huggingfacehub_api_token=token,
     )
-    embedding = HuggingFaceEmbeddings()
 
-    pdf_folder = project_root / "data" / "chroma"
-    pdf_files = sorted(pdf_folder.glob("*.pdf"))
-    if not pdf_files:
-        raise FileNotFoundError(f"No PDF files found in {pdf_folder}")
+    embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-    all_documents = []
-    for pdf_file in pdf_files:
-        loader = PyPDFLoader(pdf_file)
-        docs = loader.load()
-        all_documents.extend(docs)
-
-    splitter = TokenTextSplitter(chunk_size=1000, chunk_overlap=200)
-    chunks = splitter.split_documents(all_documents)
-
-    vector_store = Chroma.from_documents(
-        documents=chunks,
-        embedding=embedding,
-        persist_directory=str(project_root / "data" / "chroma" / "chroma_db"),
+    # Load persisted store if it exists; otherwise start empty.
+    vector_store = Chroma(
+        persist_directory=str(_CHROMA_DIR),
+        embedding_function=embedding,
     )
+
+    # Seed from any PDFs already present in the data directory.
+    seed_pdfs = sorted(_DATA_DIR.glob("*.pdf"))
+    if seed_pdfs:
+        _ingest_pdfs(seed_pdfs, vector_store)
 
     retriever = vector_store.as_retriever(
         search_type="similarity",
         search_kwargs={"k": 5},
     )
 
-    message = """
-      Answer the following question using the context provided:
-
-      Context: {context}
-      Question: {question}
-      Answer:
-    """
+    prompt_template = (
+        "Answer the following question using only the context provided.\n\n"
+        "Context:\n{context}\n\n"
+        "Question: {question}\n"
+        "Answer:"
+    )
 
     _llm = llm
+    _vector_store = vector_store
     _retriever = retriever
-    _message = message
+    _prompt_template = prompt_template
     _initialized = True
 
 
-def rag_chain_invoke(input_obj):
-    return answer_from_input(input_obj)
+def _ingest_pdfs(pdf_paths, vector_store=None):
+    """Chunk PDFs and add them to the vector store. Returns number of chunks added."""
+    from langchain_community.document_loaders import PyPDFLoader
+    from langchain_text_splitters import TokenTextSplitter
+
+    if vector_store is None:
+        vector_store = _vector_store
+
+    all_docs = []
+    for pdf_path in pdf_paths:
+        loader = PyPDFLoader(str(pdf_path))
+        all_docs.extend(loader.load())
+
+    if not all_docs:
+        return 0
+
+    splitter = TokenTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = splitter.split_documents(all_docs)
+    vector_store.add_documents(chunks)
+    return len(chunks)
+
+
+def add_pdf_to_store(pdf_path: str) -> int:
+    """Ingest a single PDF file into the live Chroma vector store.
+
+    The caller is responsible for writing the file to disk before calling this.
+    Returns the number of chunks added.
+    """
+    _initialize()
+    return _ingest_pdfs([Path(pdf_path)])
 
 
 def answer_from_input(input_obj, top_k=5):
-    """Accept either a plain question string or a dict with a `question` key."""
+    """Accept either a plain question string or a dict with a ``question`` key."""
     _initialize()
 
     if isinstance(input_obj, dict):
@@ -82,15 +119,14 @@ def answer_from_input(input_obj, top_k=5):
     else:
         question = input_obj
 
-    if question is None:
-        raise ValueError("No question provided in input dict")
+    if not question:
+        raise ValueError("No question provided")
 
-    try:
-        docs = _retriever.get_relevant_documents(question)
-    except Exception:
-        docs = _retriever.invoke(question)
+    docs = _retriever.invoke(question)
+    context = "\n\n".join(d.page_content for d in docs[:top_k])
+    prompt = _prompt_template.format(context=context, question=question)
+    return _llm.invoke(prompt)
 
-    context = "\n\n".join([d.page_content for d in docs[:top_k]])
-    prompt_text = _message.format(context=context, question=question)
-    resp = _llm.invoke(prompt_text)
-    return resp
+
+def rag_chain_invoke(input_obj):
+    return answer_from_input(input_obj)
